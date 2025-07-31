@@ -14,6 +14,7 @@ interface PreviousTimeLeft {
   minutes: number;
   seconds: number;
 }
+
 function CountdownTimer({ targetDate }: { targetDate: string }) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [previousTimeLeft, setPreviousTimeLeft] = useState<PreviousTimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -68,29 +69,40 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
   const hasChanged = (current: number, previous: number) => {
     return current !== previous;
   };
+
   return (
     <div className="mb-8 p-6 rounded-2xl bg-gray-800/50 border border-yellow-400/30 max-w-2xl mx-auto">
       <div className="text-center mb-4">
         <p className="text-sm font-medium text-yellow-400 mb-2">⚡ LIMITED TIME OFFER ENDS IN:</p>
       </div>
       <div className="grid grid-cols-4 gap-2 sm:gap-4">
-        {timeUnits.map((unit, index) => (
-          <div key={unit.label} className="text-center">
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-3 sm:p-4 border border-gray-700/50">
-              <div className="text-2xl sm:text-3xl font-bold text-white mb-1">
-                {unit.value.toString().padStart(2, '0')}
+        {timeUnits.map((unit, index) => {
+          const previousValue = index === 0 ? previousTimeLeft.days : 
+                               index === 1 ? previousTimeLeft.hours :
+                               index === 2 ? previousTimeLeft.minutes : 
+                               previousTimeLeft.seconds;
+          const shouldAnimate = isInitialLoad || hasChanged(unit.value, previousValue);
+          
+          return (
+            <div key={unit.label} className="text-center">
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-3 sm:p-4 border border-gray-700/50">
+                <div className={`text-2xl sm:text-3xl font-bold text-white mb-1 transition-all duration-500 ${
+                  shouldAnimate ? 'animate-pulse scale-110' : ''
+                } ${isInitialLoad ? 'animate-bounce' : ''}`}>
+                  {unit.value.toString().padStart(2, '0')}
+                </div>
+                <div className="text-xs sm:text-sm text-gray-400 font-medium uppercase tracking-wide">
+                  {unit.label}
+                </div>
               </div>
-              <div className="text-xs sm:text-sm text-gray-400 font-medium uppercase tracking-wide">
-                {unit.label}
-              </div>
+              {index < timeUnits.length - 1 && (
+                <div className="hidden sm:block absolute top-1/2 -translate-y-1/2 right-0 translate-x-1/2">
+                  <span className="text-yellow-400 font-bold text-xl">:</span>
+                </div>
+              )}
             </div>
-            {index < timeUnits.length - 1 && (
-              <div className="hidden sm:block absolute top-1/2 -translate-y-1/2 right-0 translate-x-1/2">
-                <span className="text-yellow-400 font-bold text-xl">:</span>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -119,12 +131,6 @@ function App() {
         <div className="mx-auto max-w-6xl text-center">
           <div className="mb-8">
             <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-red-500/20 to-orange-500/20 px-4 py-2 text-sm font-medium text-red-300 border border-red-400/30 animate-pulse">
-          const previousValue = index === 0 ? previousTimeLeft.days : 
-                               index === 1 ? previousTimeLeft.hours :
-                               index === 2 ? previousTimeLeft.minutes : 
-                               previousTimeLeft.seconds;
-          const shouldAnimate = isInitialLoad || hasChanged(unit.value, previousValue);
-          
               <Sparkles className="h-4 w-4" />
               ⚡ Limited Launch: Save 75% Today Only
             </span>
@@ -671,9 +677,7 @@ function ThankYouPage() {
               <div>
                 <div className="font-medium">Watch the money roll in</div>
                 <div className="text-sm text-gray-400">Let AI automation work 24/7 while you focus on scaling</div>
-                <div className={`text-2xl sm:text-3xl font-bold text-white mb-1 transition-all duration-500 ${
-                  shouldAnimate ? 'animate-pulse scale-110' : ''
-                } ${isInitialLoad ? 'animate-bounce' : ''}`}>
+              </div>
             </div>
           </div>
         </div>
@@ -686,7 +690,7 @@ function ThankYouPage() {
         </div>
         
         <p className="text-sm text-gray-400 mt-8">
-          Questions? Contact our support team anytime for help getting started.
+          Questions? Contact our support team at support@aiworkflows.com
         </p>
       </div>
     </div>
