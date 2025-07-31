@@ -8,8 +8,16 @@ interface TimeLeft {
   seconds: number;
 }
 
+interface PreviousTimeLeft {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
 function CountdownTimer({ targetDate }: { targetDate: string }) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [previousTimeLeft, setPreviousTimeLeft] = useState<PreviousTimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
@@ -22,7 +30,12 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
         const minutes = Math.floor((difference / 1000 / 60) % 60);
         const seconds = Math.floor((difference / 1000) % 60);
         
+        setPreviousTimeLeft(timeLeft);
         setTimeLeft({ days, hours, minutes, seconds });
+        
+        if (isInitialLoad) {
+          setIsInitialLoad(false);
+        }
         setIsExpired(false);
       } else {
         setIsExpired(true);
@@ -33,7 +46,7 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
     const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
-  }, [targetDate]);
+  }, [targetDate, timeLeft, isInitialLoad]);
 
   if (isExpired) {
     return (
@@ -52,6 +65,9 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
     { label: 'Seconds', value: timeLeft.seconds }
   ];
 
+  const hasChanged = (current: number, previous: number) => {
+    return current !== previous;
+  };
   return (
     <div className="mb-8 p-6 rounded-2xl bg-gray-800/50 border border-yellow-400/30 max-w-2xl mx-auto">
       <div className="text-center mb-4">
@@ -103,6 +119,12 @@ function App() {
         <div className="mx-auto max-w-6xl text-center">
           <div className="mb-8">
             <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-red-500/20 to-orange-500/20 px-4 py-2 text-sm font-medium text-red-300 border border-red-400/30 animate-pulse">
+          const previousValue = index === 0 ? previousTimeLeft.days : 
+                               index === 1 ? previousTimeLeft.hours :
+                               index === 2 ? previousTimeLeft.minutes : 
+                               previousTimeLeft.seconds;
+          const shouldAnimate = isInitialLoad || hasChanged(unit.value, previousValue);
+          
               <Sparkles className="h-4 w-4" />
               ⚡ Limited Launch: Save 75% Today Only
             </span>
@@ -649,7 +671,9 @@ function ThankYouPage() {
               <div>
                 <div className="font-medium">Watch the money roll in</div>
                 <div className="text-sm text-gray-400">Let AI automation work 24/7 while you focus on scaling</div>
-              </div>
+                <div className={`text-2xl sm:text-3xl font-bold text-white mb-1 transition-all duration-500 ${
+                  shouldAnimate ? 'animate-pulse scale-110' : ''
+                } ${isInitialLoad ? 'animate-bounce' : ''}`}>
             </div>
           </div>
         </div>
@@ -662,7 +686,7 @@ function ThankYouPage() {
         </div>
         
         <p className="text-sm text-gray-400 mt-8">
-          Need help getting started? Contact our support team at <span className="text-yellow-400">support@aiworkflows.com</span>
+          );
         </p>
       </div>
     </div>
