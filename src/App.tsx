@@ -1,8 +1,90 @@
 import React, { useState, useEffect } from 'react';
 import { Check, Download, Star, Zap, Clock, DollarSign, PlayCircle, Sparkles, ChevronRight, CheckCircle2, Users, Target, Shield, ArrowRight, Cog, TrendingUp, Eye, Video, Music, BarChart3, Palette, Globe, Rocket } from 'lucide-react';
 
+interface TimeLeft {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+function CountdownTimer({ targetDate }: { targetDate: string }) {
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isExpired, setIsExpired] = useState(false);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = new Date(targetDate).getTime() - new Date().getTime();
+      
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((difference / 1000 / 60) % 60);
+        const seconds = Math.floor((difference / 1000) % 60);
+        
+        setTimeLeft({ days, hours, minutes, seconds });
+        setIsExpired(false);
+      } else {
+        setIsExpired(true);
+      }
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(timer);
+  }, [targetDate]);
+
+  if (isExpired) {
+    return (
+      <div className="mb-8 p-4 rounded-2xl bg-gray-800/50 border border-gray-700/50 max-w-md mx-auto">
+        <p className="text-lg font-medium text-gray-300 text-center">
+          ⏰ The launch offer has ended
+        </p>
+      </div>
+    );
+  }
+
+  const timeUnits = [
+    { label: 'Days', value: timeLeft.days },
+    { label: 'Hours', value: timeLeft.hours },
+    { label: 'Minutes', value: timeLeft.minutes },
+    { label: 'Seconds', value: timeLeft.seconds }
+  ];
+
+  return (
+    <div className="mb-8 p-6 rounded-2xl bg-gray-800/50 border border-yellow-400/30 max-w-2xl mx-auto">
+      <div className="text-center mb-4">
+        <p className="text-sm font-medium text-yellow-400 mb-2">⚡ LIMITED TIME OFFER ENDS IN:</p>
+      </div>
+      <div className="grid grid-cols-4 gap-2 sm:gap-4">
+        {timeUnits.map((unit, index) => (
+          <div key={unit.label} className="text-center">
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-3 sm:p-4 border border-gray-700/50">
+              <div className="text-2xl sm:text-3xl font-bold text-white mb-1">
+                {unit.value.toString().padStart(2, '0')}
+              </div>
+              <div className="text-xs sm:text-sm text-gray-400 font-medium uppercase tracking-wide">
+                {unit.label}
+              </div>
+            </div>
+            {index < timeUnits.length - 1 && (
+              <div className="hidden sm:block absolute top-1/2 -translate-y-1/2 right-0 translate-x-1/2">
+                <span className="text-yellow-400 font-bold text-xl">:</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [showThankYou, setShowThankYou] = useState(false);
+  
+  // Set countdown target date (August 5, 2025 at 23:59:59 UTC)
+  const countdownTarget = "2025-08-05T23:59:59Z";
 
   const handlePurchase = () => {
     // In a real app, this would integrate with Stripe
@@ -39,6 +121,8 @@ function App() {
             <br />
             <span className="text-yellow-400">No coding. No complexity. Just results.</span>
           </p>
+          
+          <CountdownTimer targetDate={countdownTarget} />
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <button
