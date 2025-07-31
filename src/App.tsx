@@ -690,7 +690,7 @@ function ThankYouPage() {
         </div>
         
         <p className="text-sm text-gray-400 mt-8">
-          Questions? Contact our support team at support@aiworkflows.com
+          Questions? Contact our support team anytime for help getting started.
         </p>
       </div>
     </div>
